@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} HOTELIO | A HOTEL MANAGEMENT WEBSITE {% endblock title %}
+
+{% block main %}
+<link rel="stylesheet" href="{% static 'css/listProperty.css' %}">
+
+{% if messages %}
+  <div class="flash-messages">
+    {% for message in messages %}
+      <div class="alert alert-info" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div id="main">
+  <section class="list-property-form" style="border:2px solid black !important;">
+    <h2>List Your Property</h2>
+    <hr style="height:5px;background-color: black;width: 100%;">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="property-name">Hotel Name:</label>
+        <input type="text" id="property-name" name="property_name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="property-location">Location (City):</label>
+        <input type="text" id="property-location" name="property_location" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="property-image">Upload Property Image:</label>
+        <input type="file" id="property-image" name="property_image" accept="image/*" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="license-number">License Number:</label>
+        <input type="text" id="license-number" name="license_number" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="rooms-available">Number of Rooms Available:</label>
+        <input type="number" id="rooms-available" name="rooms_available" min="1" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="price">Price for Single Room:</label>
+        <input type="number" id="price" name="price" min="1" step="any" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="property-description">Property Description:</label>
+        <textarea id="property-description" name="property_description" rows="4" required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <button type="submit">Submit Property</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+{% endblock main %}

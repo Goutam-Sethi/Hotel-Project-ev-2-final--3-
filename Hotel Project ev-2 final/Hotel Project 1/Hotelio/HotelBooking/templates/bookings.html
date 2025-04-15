@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block style %}
+<style>
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 0;
+}
+
+/* Center the main content */
+main {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Title styling */
+.search-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+
+/* No results message */
+.no-results {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #777;
+    margin-top: 20px;
+}
+
+/* Booking container for cards */
+.bookings-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* Individual booking card */
+.booking-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 900px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    border: 2px solid #f1f1f1;  /* Light border for card */
+}
+
+/* Hover effects for booking cards */
+.booking-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Booking details styling */
+.booking-card h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 15px;
+    text-transform: capitalize;
+}
+
+.booking-card p {
+    color: #555;
+    font-size: 1rem;
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+/* Button for canceling booking */
+.cancel-btn, .payment-btn {
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    /* width: 48%;  Buttons are wide but side by side */
+    margin: 10px;  /* Space between buttons */
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+.cancel-btn:hover {
+    background-color: #e53935;
+    transform: scale(1.05);
+}
+
+.payment-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.payment-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+/* Styling for when there are no bookings */
+.no-bookings-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+}
+
+/* Styling for the action buttons container */
+.booking-actions {
+    display: flex;
+    justify-content: space-between; /* Spread out the buttons side by side */
+    margin-top: 30px;
+    width: 100%; /* Ensure it takes up full width for proper spacing */
+}
+
+/* Add some visual separation between cards */
+.bookings-container {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .booking-card {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .search-title {
+        font-size: 2.2rem;
+    }
+
+    .booking-actions {
+        flex-direction: column; /* Stack buttons on smaller screens */
+        align-items: center;
+    }
+
+    .cancel-btn, .payment-btn {
+        width: 80%;  /* Buttons take up more width on smaller screens */
+        margin: 10px 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<h1 class="search-title">Your Bookings</h1>
+
+<!-- Check if the user has bookings -->
+{% if bookings %}
+    <div class="bookings-container">
+        {% for booking in bookings %}
+        <div class="booking-card">
+            <h2>Booking for: {{ booking.property.hotel_name }}</h2>
+            <p><strong>Location:</strong> {{ booking.property.location }}</p>
+            <p><strong>Price:</strong> ₹{{ booking.property.price }}</p>
+            <p><strong>Booked on:</strong> {{ booking.booked_at }}</p>
+            <p><strong>Check-in:</strong> {{ booking.checkin_date }}</p>
+            <p><strong>Check-out:</strong> {{ booking.checkout_date }}</p>
+        
+            <div class="booking-actions">
+                <form action="{% url 'cancel_booking' booking.id %}" method="POST" id="cancel-form-{{ booking.id }}">
+                    {% csrf_token %}
+                    <button type="button" class="cancel-btn" onclick="confirmCancellation({{ booking.id }})">Cancel Booking</button>
+                </form>
+        
+                <form action="#" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="payment-btn">Pay Now</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="no-results">You have no bookings yet.</p>
+{% endif %}
+<script>
+    // JavaScript function for confirming booking cancellation
+    function confirmCancellation(bookingId) {
+        const cancelForm = document.getElementById('cancel-form-' + bookingId);
+        
+        // Show confirmation dialog
+        const userConfirmed = confirm("Are you sure you want to cancel this booking?");
+        
+        if (userConfirmed) {
+            // If user confirms, submit the form
+            cancelForm.submit();
+        }
+        // If user cancels, do nothing (form won't be submitted)
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Book Property | HOTELIO
+{% endblock title %}
+
+{% block style %}
+
+<link rel="stylesheet" href="{% static 'css/book_property.css' %}">
+{% endblock %}
+
+{% block main %}
+
+<!-- Django Messages -->
+{% if messages %}
+  <div class="flash-messages">
+    {% for message in messages %}
+      <div class="alert alert-info" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="book-property-container">
+    <h2>Book Hotel: {{ property.hotel_name }}</h2>
+    <div class="property-details">
+        <p><strong>Description:</strong> {{ property.description }}</p>
+        <p><strong>Location:</strong> {{ property.location }}</p>
+        <p><strong>Price:</strong> ₹{{ property.price }}</p>
+        <p><strong>Rooms Available:</strong> {{ property.rooms_available }}</p>
+        <p><strong>License No.:</strong> {{ property.license_number }}</p>
+    </div>
+
+    <form action="{% url 'book' property.id %}" method="POST">
+        {% csrf_token %}
+        
+        <label for="user-name">Your Name:</label>
+        <input type="text" id="user-name" name="user-name" required>
+    
+        <label for="user-phone">Phone Number:</label>
+        <input type="text" id="user-phone" name="user-phone" required>
+    
+        <label for="user-email">Email Address:</label>
+        <input type="email" id="user-email" name="user-email" required>
+    
+        <label for="checkin-date">Check-in Date:</label>
+        <input type="date" id="checkin-date" name="checkin-date" required>
+    
+        <label for="checkout-date">Check-out Date:</label>
+        <input type="date" id="checkout-date" name="checkout-date" required>
+    
+        <!-- Select Number of Rooms -->
+        <label for="rooms">Number of Rooms:</label>
+        <select id="rooms" name="rooms" required>
+            {% for i in rooms_range %}
+                <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+        </select>
+    
+        <button type="submit" class="book-now-btn">Confirm Booking</button>
+    </form>
+</div>
+
+<script>
+  // Function to validate the dates and room availability
+  function validateBookingDatesAndRooms() {
+      const checkinDate = document.getElementById("checkin-date").value;
+      const checkoutDate = document.getElementById("checkout-date").value;
+      const rooms = document.getElementById("rooms");
+      
+      const checkin = new Date(checkinDate);
+      const checkout = new Date(checkoutDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Ensure check-in date is after today's date
+      if (checkin <= today) {
+          alert("Check-in date must be after today's date.");
+          return false;  // Prevent form submission
+      }
+
+      // Ensure check-out date is after check-in date
+      if (checkin >= checkout) {
+          alert("Check-out date must be after the check-in date.");
+          return false;  // Prevent form submission
+      }
+
+      // Ensure that the selected number of rooms is available
+      const availableRooms = parseInt(rooms.getAttribute('data-available-rooms'));
+
+      if (parseInt(rooms.value) > availableRooms) {
+          alert(`You can only book up to ${availableRooms} rooms.`);
+          return false;  // Prevent form submission
+      }
+
+      // If validation is successful, allow form submission
+      return true;
+  }
+
+  // Attach validation to form submission
+  document.querySelector("form").addEventListener("submit", function(event) {
+      if (!validateBookingDatesAndRooms()) {
+          event.preventDefault();  // Prevent form submission if validation fails
+      }
+  });
+
+  // Dynamic update of the rooms select box
+  function updateRoomsSelect(availableRooms) {
+      const roomsSelect = document.getElementById("rooms");
+      // Update the data-available-rooms attribute
+      roomsSelect.setAttribute("data-available-rooms", availableRooms);
+      
+      // Enable or disable options based on available rooms
+      for (let i = 1; i <= roomsSelect.options.length; i++) {
+          if (i > availableRooms) {
+              roomsSelect.options[i - 1].disabled = true;
+          } else {
+              roomsSelect.options[i - 1].disabled = false;
+          }
+      }
+  }
+
+  // On page load, update the room selection options
+  document.addEventListener("DOMContentLoaded", function() {
+      const availableRooms = parseInt(document.getElementById("rooms").getAttribute("data-available-rooms"));
+      updateRoomsSelect(availableRooms);
+  });
+</script>
+
+
+{% endblock %}

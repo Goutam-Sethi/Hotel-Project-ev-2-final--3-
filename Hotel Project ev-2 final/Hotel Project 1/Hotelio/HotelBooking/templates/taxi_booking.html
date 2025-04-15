@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Car</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
+        <!-- Car Info Card (outside the form) -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Booking for: {{ car.name }}</h2>
+            <p class="text-gray-700"><strong>Type:</strong> {{ car.rate_per_hour }}</p>
+        </div>
+
+        <!-- Booking Form -->
+        <h1 class="text-3xl font-bold mb-6 text-center">Book Your Car</h1>
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+
+            <!-- Pickup Location -->
+            <div>
+                <label for="pickup_location" class="block font-medium">Pickup Location</label>
+                <input type="text" name="pickup_location" id="pickup_location" required
+                    class="w-full mt-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black">
+            </div>
+
+            <!-- Dropoff Location -->
+            <div>
+                <label for="dropoff_location" class="block font-medium">Dropoff Location</label>
+                <input type="text" name="dropoff_location" id="dropoff_location" required
+                    class="w-full mt-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black">
+            </div>
+
+            <!-- Pickup Date & Time -->
+            <div>
+                <label for="pickup_datetime" class="block font-medium">Pickup Date & Time</label>
+                <input type="datetime-local" name="pickup_datetime" id="pickup_datetime" required
+                    class="w-full mt-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black">
+            </div>
+
+            <!-- Dropoff Date & Time -->
+            <div>
+                <label for="dropoff_datetime" class="block font-medium">Dropoff Date & Time</label>
+                <input type="datetime-local" name="dropoff_datetime" id="dropoff_datetime" required
+                    class="w-full mt-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black">
+            </div>
+
+            <!-- Name -->
+            <div>
+                <label for="name" class="block font-medium">Your Name</label>
+                <input type="text" name="username" id="name" required
+                    class="w-full mt-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black">
+            </div>
+
+            <!-- Phone -->
+            <div>
+                <label for="phone" class="block font-medium">Phone Number</label>
+                <input type="tel" name="phone" id="phone" required
+                    class="w-full mt-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black">
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit"
+                    class="w-full bg-black text-white py-2 px-4 rounded hover:bg-white hover:text-black hover:border hover:border-black transition">
+                    Confirm Booking
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

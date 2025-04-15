@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+
+{% block style %}
+<style>
+/* Center the main content */
+main {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Title styling */
+.search-title {
+    text-align: center;
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* No results message */
+.no-results {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #777;
+}
+
+/* Grid layout for properties */
+.properties-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Ensures that the grid is flexible */
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 20px;
+    justify-items: center; /* Centers the cards */
+}
+
+/* Property Card */
+.property-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Card Image */
+.property-card img {
+    width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-bottom: 15px;
+}
+
+/* Hover Effects */
+.property-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Property Details */
+.property-card h2 {
+    color: #222;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.property-card p {
+    color: #555;
+    font-size: 1rem;
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
+/* Price & Location Styling */
+.property-card p strong {
+    color: #333;
+}
+
+/* General button styles */
+.book-now-btn {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    text-align: center;
+}
+
+/* Hover effect for Book Now button */
+.book-now-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+/* Disabled state */
+.book-now-btn:disabled {
+    background-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+/* Button for users not logged in */
+.book-now-btn.login-to-book {
+    background-color: #f44336;
+}
+
+.book-now-btn.login-to-book:hover {
+    background-color: #e53935;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .properties-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block main %}
+<h1 class="search-title">Search Results</h1>
+<br>
+
+{% if bookings %}
+    <div class="bookings-container">
+        {% for booking in bookings %}
+        <div class="booking-card">
+            <h2>Booking for: {{ booking.property.hotel_name }}</h2>
+            <p><strong>Location:</strong> {{ booking.property.location }}</p>
+            <p><strong>Booked on:</strong> {{ booking.booked_at|date:"D, d M Y H:i" }}</p>
+            <p><strong>Check-in:</strong> {{ booking.checkin_date }}</p>
+            <p><strong>Check-out:</strong> {{ booking.checkout_date }}</p>
+            <p><strong>Number of nights:</strong> {{ booking.number_of_nights }}</p>
+            <p><strong>Rooms booked:</strong> {{ booking.rooms_booked }}</p>
+            <p><strong>Total Price:</strong> ₹{{ booking.total_price }}</p>
+
+            <div class="booking-actions">
+                <!-- Cancel Booking -->
+                <form action="{% url 'cancel_booking' booking.id %}" method="POST" id="cancel-form-{{ booking.id }}">
+                    {% csrf_token %}
+                    <button type="button" class="cancel-btn" onclick="confirmCancellation({{ booking.id }})">Cancel Booking</button>
+                </form>
+
+                <!-- Pay Now -->
+                <form action="#" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="payment-btn">Pay Now</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="no-results">No Hotels found for this location.</p>
+{% endif %}
+
+<!-- Confirmation Script -->
+<script>
+function confirmCancellation(bookingId) {
+    if (confirm("Are you sure you want to cancel this booking?")) {
+        document.getElementById('cancel-form-' + bookingId).submit();
+    }
+}
+</script>
+{% endblock %}
