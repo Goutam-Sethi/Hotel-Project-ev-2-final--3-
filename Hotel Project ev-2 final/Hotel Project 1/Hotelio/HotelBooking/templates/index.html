@@ -175,6 +175,26 @@ function typeAndErase() {
 
 // Start typing effect on page load
 typeAndErase();
+const checkin = document.getElementById("checkin");
+  const checkout = document.getElementById("checkout");
+
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
+
+  // Set the minimum value for check-in date
+  checkin.min = today;
+
+  checkin.addEventListener("change", function () {
+    const checkinDate = new Date(this.value);
+
+    // Set checkout's min to the selected checkin date
+    checkout.min = this.value;
+
+    // Reset checkout if it's before the checkin date
+    if (checkout.value && new Date(checkout.value) < checkinDate) {
+      checkout.value = "";
+    }
+  });
 
 </script>
 

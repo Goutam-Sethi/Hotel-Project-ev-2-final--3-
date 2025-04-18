@@ -6,8 +6,97 @@
 {% endblock title %}
 
 {% block style %}
-
 <link rel="stylesheet" href="{% static 'css/hotels.css' %}">
+<style>
+    #properties-container {
+        padding: 30px 50px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+    }
+
+    .property-box-wrapper {
+        position: relative;
+    }
+
+    .property-box {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.2s ease;
+        position: relative;
+        z-index: 1;
+    }
+
+    .property-box:hover {
+        transform: translateY(-5px);
+    }
+
+    .property-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .property-details {
+        padding: 15px 20px;
+    }
+
+    .property-details h3 {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #2c3e50;
+        text-transform: uppercase;
+    }
+
+    .property-details p {
+        font-size: 14px;
+        margin-bottom: 6px;
+        color: #555;
+    }
+
+    .book-now-btn {
+        margin-top: 12px;
+        padding: 10px 18px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .book-now-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-size: 18px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        border-radius: 10px;
+        text-transform: uppercase;
+    }
+
+    .disabled-btn {
+        background-color: #999 !important;
+        cursor: not-allowed !important;
+    }
+
+</style>
 {% endblock %}
 
 {% block main %}
@@ -24,30 +113,35 @@
 {% endif %}
 
 <!-- Property Listings -->
-{% load static %}
-
 <div id="properties-container">
     {% for property in properties %}
-        <div class="property-box">
-          <img src="{{ property.image.url }}" alt="{{ property.name }}" class="property-image">
+        <div class="property-box-wrapper">
+            <div class="property-box">
+                <img src="{{ property.image.url }}" alt="{{ property.hotel_name }}" class="property-image">
+                
+                {% if property.rooms_available == 0 %}
+                    <div class="overlay">No Rooms Available</div>
+                {% endif %}
 
+                <div class="property-details">
+                    <h3>{{ property.hotel_name }}</h3>
+                    <p><strong>Description:</strong> {{ property.description }}</p>
+                    <p><strong>Location:</strong> {{ property.location }}</p>
+                    <p><strong>Price:</strong> ₹{{ property.price }}</p>
+                    <p><strong>Rooms Available:</strong> {{ property.rooms_available }}</p>
+                    <p><strong>License No.:</strong> {{ property.license_number }}</p>
 
-            <div class="property-details">
-                <h3>{{ property.name }}</h3>
-                <p><strong>Description:</strong> {{ property.description }}</p>
-                <p><strong>Location:</strong> {{ property.location }}</p>
-                <p><strong>Price:</strong> ₹{{ property.price }}</p>
-                <p><strong>Rooms Available:</strong> {{ property.rooms_available }}</p>
-                <p><strong>License No.:</strong> {{ property.license_number }}</p>
+                    {% if user.is_authenticated and property.rooms_available > 0 %}
+                        <button class="book-now-btn" onclick="window.location.href='{% url 'book' property.id %}'">Book Now</button>
+                    {% elif not user.is_authenticated and property.rooms_available > 0 %}
+                        <button class="book-now-btn" onclick="window.location.href='{% url 'login' %}'">Login to Book</button>
+                    {% else %}
+                        <button class="book-now-btn disabled-btn" disabled>No Booking</button>
+                    {% endif %}
+                </div>
             </div>
-
-            {% if user.is_authenticated %}
-                <button class="book-now-btn" onclick="window.location.href='{% url 'book' property.id %}'">Book Now</button>
-            {% else %}
-                <button class="book-now-btn" onclick="window.location.href='{% url 'login' %}'">Login to Book</button>
-            {% endif %}
         </div>
     {% endfor %}
 </div>
 
-{% endblock main %}
+{% endblock %}

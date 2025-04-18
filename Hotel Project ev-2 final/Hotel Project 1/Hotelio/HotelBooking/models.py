@@ -39,7 +39,22 @@ class AppUser(AbstractUser):
     def __str__(self):
         return self.email
 
+
+from django.db import models
+from django.conf import settings
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
 class Property(models.Model):
+    ROOM_CHOICES = [
+        ('STANDARD', 'Standard Room'),
+        ('DELUXE', 'Deluxe Room'),
+        ('AC', 'AC Room'),
+        ('NON_AC', 'Non-AC Room'),
+        ('DUPLEX', 'Duplex Suite'),
+        ('TRIPLEX', 'Triplex Suite'),
+    ]
+
     hotel_name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
     image = models.ImageField(upload_to='images/')
@@ -47,12 +62,23 @@ class Property(models.Model):
     rooms_available = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    owner = models.ForeignKey(AppUser, on_delete=models.CASCADE,default="1")
+    room_types = models.JSONField(default=list)  # Store list of selected room types
+    owner = models.ForeignKey("AppUser", on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return self.hotel_name
 
+
 class Booking(models.Model):
+    ROOM_TYPE_CHOICES = [
+        ('AC', 'AC Room'),
+        ('NON_AC', 'Non-AC Room'),
+        ('DUPLEX', 'Duplex Suite'),
+        ('TRIPLEX', 'Triplex Suite'),
+        ('DELUXE', 'Deluxe Room'),
+        ('STANDARD', 'Standard Room'),
+    ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     property = models.ForeignKey(Property, on_delete=models.PROTECT)
     user_name = models.CharField(max_length=100)
@@ -61,8 +87,17 @@ class Booking(models.Model):
     checkin_date = models.DateField()
     checkout_date = models.DateField()
     rooms_booked = models.IntegerField()
+    room_type = models.CharField(max_length=20, choices=ROOM_TYPE_CHOICES, default='STANDARD')
     booked_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user_name} - {self.property.hotel_name} ({self.booked_at.strftime('%Y-%m-%d %H:%M')})"
-    
+        return f"{self.user_name} - {self.property.hotel_name} ({self.room_type}) on {self.booked_at.strftime('%Y-%m-%d %H:%M')}"
+
+    def save(self, *args, **kwargs):
+        # Ensure rooms are available before saving the booking
+        if self.rooms_booked <= self.property.rooms_available:
+            self.property.rooms_available -= self.rooms_booked
+            self.property.save()  # Save the updated property after booking
+            super(Booking, self).save(*args, **kwargs)
+        else:
+            raise ValueError("Not enough rooms available for this booking.")

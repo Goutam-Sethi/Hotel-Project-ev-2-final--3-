@@ -1,7 +1,9 @@
 
+from datetime import datetime
 from .models import CarBooking, TaxiCar
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.utils import timezone
 
 
 
@@ -32,8 +34,6 @@ def book_car_view(request):
             messages.error(request, "Please fill all required fields.")
             return render(request, 'taxi_index.html')
 
-        # Here you can add filtering logic based on availability, location, etc.
-        # For now, just fetch all cars
         cars = TaxiCar.objects.all()
 
         return render(request, 'taxi_detail.html', {'cars': cars, 'pickup_location': pickup_location,
@@ -54,7 +54,7 @@ def confirm_booking(request, car_id):
     from datetime import datetime
     from django.contrib import messages
 
-    # Get the Car by ID
+  
     car = get_object_or_404(TaxiCar, id=car_id)
 
     if request.method == "POST":
@@ -65,12 +65,11 @@ def confirm_booking(request, car_id):
         pickup_datetime_str = request.POST.get("pickup_datetime")
         dropoff_datetime_str = request.POST.get("dropoff_datetime")
 
-        # Basic validation
         if not all([username, phone, pickup_location, dropoff_location, pickup_datetime_str, dropoff_datetime_str]):
             messages.error(request, "Please fill all required fields.")
             return redirect('cab_booking')
 
-        # Parse datetime strings into date and time objects
+
         try:
             pickup_datetime = datetime.strptime(pickup_datetime_str, "%Y-%m-%dT%H:%M")
             dropoff_datetime = datetime.strptime(dropoff_datetime_str, "%Y-%m-%dT%H:%M")
@@ -78,8 +77,8 @@ def confirm_booking(request, car_id):
             messages.error(request, "Invalid date/time format.")
             return redirect('cab_booking')
 
-        # Create a CarBooking object
         booking = CarBooking.objects.create(
+            taxi_car=car,
             car_name=car.name,
             car_price=car.rate_per_hour,
             username=username,
@@ -92,16 +91,44 @@ def confirm_booking(request, car_id):
             dropoff_time=dropoff_datetime.time()
         )
 
-        return redirect('manage_bookings')  # Redirect to manage bookings page after success
+        return redirect('booking_confirmation', booking_id=booking.id)  
 
-    # For GET request, render the booking form with the car data
+ 
     return render(request, 'taxi_booking.html', {'car': car})
 
+
+def booking_confirmation(request, booking_id):
+    booking = get_object_or_404(CarBooking, id=booking_id)
+    car = booking.taxi_car  # This is the linked TaxiCar object
+    return render(request, 'booking_confirmation.html', {
+        'booking': booking,
+        'car': car
+    })
+
+
 @login_required
+
+
+
 def manage_bookings(request):
-    # For now, show all bookings; ideally filter by user if linked
-    bookings = CarBooking.objects.all().order_by('-booked_at')
-    return render(request, 'taxi_manage_booking.html', {'bookings': bookings})
+    bookings = CarBooking.objects.all()
+
+    for booking in bookings:
+        # Combine date and time
+        dropoff_naive = datetime.combine(booking.dropoff_date, booking.dropoff_time)
+
+        # Convert it to timezone-aware
+        dropoff_datetime = timezone.make_aware(dropoff_naive)
+
+        # Compare with current time
+        booking.is_completed = dropoff_datetime <= timezone.now()
+
+    context = {
+        'bookings': bookings,
+    }
+    return render(request, 'taxi_manage_booking.html', context)
+
+
 
 @login_required
 def cancel_booking(request, booking_id):

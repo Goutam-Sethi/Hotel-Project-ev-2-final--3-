@@ -15,48 +15,73 @@
   </div>
 {% endif %}
 
-<div id="main">
-  <section class="list-property-form" style="border:2px solid black !important;">
+<div id="main" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+  <section class="list-property-form" style="border:2px solid rgb(54, 51, 152); padding: 20px; width: 75vw; background-color: #f9f9f9; border-radius: 10px;">
     <h2>List Your Property</h2>
-    <hr style="height:5px;background-color: black;width: 100%;">
+    <hr style="height:5px;background-color: rgb(0, 0, 0);width: 100%;">
+
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
-      
+
       <div class="form-group">
         <label for="property-name">Hotel Name:</label>
         <input type="text" id="property-name" name="property_name" required>
       </div>
-      
+
       <div class="form-group">
         <label for="property-location">Location (City):</label>
         <input type="text" id="property-location" name="property_location" required>
       </div>
-      
+
       <div class="form-group">
         <label for="property-image">Upload Property Image:</label>
         <input type="file" id="property-image" name="property_image" accept="image/*" required>
       </div>
-      
+
       <div class="form-group">
         <label for="license-number">License Number:</label>
         <input type="text" id="license-number" name="license_number" required>
       </div>
-      
+
       <div class="form-group">
         <label for="rooms-available">Number of Rooms Available:</label>
         <input type="number" id="rooms-available" name="rooms_available" min="1" required>
       </div>
-      
+
       <div class="form-group">
         <label for="price">Price for Single Room:</label>
         <input type="number" id="price" name="price" min="1" step="any" required>
       </div>
-      
+
       <div class="form-group">
         <label for="property-description">Property Description:</label>
         <textarea id="property-description" name="property_description" rows="4" required></textarea>
       </div>
-      
+
+      <div class="form-group">
+        <label>Room Types:</label>
+        <div class="checkbox-group">
+          <input type="checkbox" id="ac" name="room_type" value="AC">
+          <label for="ac">AC Room</label>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="non-ac" name="room_type" value="Non-AC">
+          <label for="non-ac">Non-AC Room</label>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="deluxe" name="room_type" value="Deluxe">
+          <label for="deluxe">Deluxe Room</label>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="duplex" name="room_type" value="Duplex">
+          <label for="duplex">Duplex Suite</label>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="triplex" name="room_type" value="Triplex">
+          <label for="triplex">Triplex Suite</label>
+        </div>
+      </div>
+
       <div class="form-group">
         <button type="submit">Submit Property</button>
       </div>

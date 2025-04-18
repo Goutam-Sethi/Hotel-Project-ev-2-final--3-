@@ -74,15 +74,23 @@ def user_login(request):
     if request.method == "POST":
         email = request.POST.get('email')
         password = request.POST.get('password')
+        selected_role = request.POST.get('role') 
+        
         user = authenticate(email=email, password=password)
         
         if user:
-            auth_login(request, user)
-            # Redirect admin/staff users to admin dashboard
+           
+            if selected_role == "admin" and not user.is_staff:
+                messages.error(request, "Invalid Admin Credentials.")
+                return render(request, 'userlogin.html')
+            
             if user.is_staff:
+                auth_login(request, user)
                 return redirect('owner_dashboard')
             else:
+                auth_login(request, user)
                 return redirect('home')
+        
         else:
             messages.error(request, "Invalid credentials")
             return render(request, 'userlogin.html')
@@ -94,7 +102,7 @@ def owner_dashboard(request):
     if not request.user.is_staff:
         return redirect('home')
 
-    # Make sure you're using Property model here
+ 
     properties = Property.objects.filter(owner=request.user)
     bookings = Booking.objects.filter(property__in=properties).select_related('property')
 
@@ -131,9 +139,9 @@ def signup(request):
 def cancel_booking_owner(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
-    # Check: Only allow owner of the property to cancel
+    
     if booking.property.owner != request.user:
-        return redirect('owner_dashboard')  # Or show error message
+        return redirect('owner_dashboard')  
 
     booking.delete()
     return redirect('owner_dashboard')
@@ -187,7 +195,7 @@ def book(request, id):
     property_obj = get_object_or_404(Property, id=id)
 
     if request.method == 'POST':
-        # Use dash-style names here to match the form
+      
         user_name = request.POST.get('user-name')
         user_email = request.POST.get('user-email')
         user_phone = request.POST.get('user-phone')
@@ -200,11 +208,11 @@ def book(request, id):
             return redirect('book', id=id)
 
         try:
-            # Convert the dates from string to datetime objects
+        
             checkin_date = datetime.strptime(checkin_date, '%Y-%m-%d')
             checkout_date = datetime.strptime(checkout_date, '%Y-%m-%d')
 
-            # Check if checkin_date is before checkout_date
+    
             if checkin_date >= checkout_date:
                 messages.error(request, "Check-out date must be after the check-in date.")
                 return redirect('book', id=id)
@@ -213,7 +221,7 @@ def book(request, id):
             messages.error(request, "Invalid date format. Please use the correct format (YYYY-MM-DD).")
             return redirect('book', id=id)
 
-        # Create the booking if no errors occurred
+   
         booking = Booking.objects.create(
             property=property_obj,
             user=request.user,
@@ -227,9 +235,9 @@ def book(request, id):
         )
 
         messages.success(request, "Booking successful!")
-        return redirect('user_bookings')  
+        return redirect('booking_confirmation_hotelio', booking_id=booking.id)  
 
-    # Calculate rooms range based on available rooms
+
     rooms_range = range(1, min(property_obj.rooms_available, 6) + 1)
 
     return render(request, 'book_property.html', {
@@ -240,20 +248,20 @@ def book(request, id):
 
 @login_required
 def user_bookings(request):
-    # Get all bookings for the currently authenticated user
+
     bookings = Booking.objects.filter(user=request.user).order_by('-booked_at')
     
-    # Render the bookings page and pass the bookings data
+ 
     return render(request, 'bookings.html', {'bookings': bookings})
 
 
-def cancel_booking(request, booking_id):
+def cancel_booking_hotel(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
     if request.method == "POST":
         booking.delete()
         messages.success(request, "Your booking has been successfully cancelled.")
-        return redirect('user_bookings')  # Redirect back to the bookings page
+        return redirect('user_bookings')  
 
     messages.error(request, "Invalid request method.")
     return redirect('user_bookings')
@@ -265,10 +273,10 @@ from django.contrib.auth import logout
 def delete_profile(request):
     if request.method == 'POST':
         user = request.user
-        logout(request)  # Log the user out before deletion
-        user.delete()    # Delete the user from the database
+        logout(request)  
+        user.delete()    
         messages.success(request, "Your profile has been deleted successfully.")
-        return redirect('home')  # Replace 'home' with your homepage view name
+        return redirect('home')  
 
     return render(request, 'delete_profile.html')
 
@@ -278,7 +286,7 @@ def dashboard(request):
     user = request.user
     context = {
         'user': user,
-        'profile': getattr(user, 'profile', None)  # Safely get profile if it exists
+        'profile': getattr(user, 'profile', None)  
     }
     return render(request, 'dashboard.html', context) 
 
@@ -288,14 +296,42 @@ from django.shortcuts import render, redirect
 
 @login_required
 def edit_profile(request):
-    user = request.user  # This is an instance of AppUser
+    user = request.user
 
     if request.method == 'POST':
         user.name = request.POST.get('name')
         user.email = request.POST.get('email')
         user.phone = request.POST.get('phone')
         user.save()
-        return redirect('dashboard')  # or any success page
+        return redirect('dashboard') 
 
     return render(request, 'edit_profile.html', {'user': user})
 
+
+from decimal import Decimal
+
+def booking_confirmation_hotelio(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+
+    total_price = booking.property.price * booking.rooms_booked
+
+    # Get discount code from GET params
+    discount_code = request.GET.get('discount_code', '').strip()
+    discount = Decimal('0.00')
+
+    if discount_code == 'HOTELIO10':
+        discount = Decimal('10.00')  # 10%
+
+    discount_amount = (discount / Decimal('100.00')) * total_price
+    final_price = total_price - discount_amount
+
+    context = {
+        'booking': booking,
+        'total_price': total_price,
+        'discount': discount,
+        'discount_amount': discount_amount,
+        'final_price': final_price,
+        'discount_code': discount_code
+    }
+
+    return render(request, 'booking_con_hotelio.html', context)

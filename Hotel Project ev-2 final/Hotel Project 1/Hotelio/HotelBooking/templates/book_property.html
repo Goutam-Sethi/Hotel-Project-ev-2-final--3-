@@ -6,7 +6,6 @@
 {% endblock title %}
 
 {% block style %}
-
 <link rel="stylesheet" href="{% static 'css/book_property.css' %}">
 {% endblock %}
 
@@ -25,109 +24,162 @@
 
 <div class="book-property-container">
     <h2>Book Hotel: {{ property.hotel_name }}</h2>
-    <div class="property-details">
-        <p><strong>Description:</strong> {{ property.description }}</p>
-        <p><strong>Location:</strong> {{ property.location }}</p>
-        <p><strong>Price:</strong> ₹{{ property.price }}</p>
-        <p><strong>Rooms Available:</strong> {{ property.rooms_available }}</p>
-        <p><strong>License No.:</strong> {{ property.license_number }}</p>
+
+    <!-- Promo Banner -->
+    <div class="promo-banner">
+        <h3>🎉 Limited Time Offer!</h3>
+        <p>Book now and get <strong>10% OFF</strong> on AC & Deluxe Rooms. Offer valid till midnight!</p>
     </div>
 
-    <form action="{% url 'book' property.id %}" method="POST">
-        {% csrf_token %}
-        
-        <label for="user-name">Your Name:</label>
-        <input type="text" id="user-name" name="user-name" required>
-    
-        <label for="user-phone">Phone Number:</label>
-        <input type="text" id="user-phone" name="user-phone" required>
-    
-        <label for="user-email">Email Address:</label>
-        <input type="email" id="user-email" name="user-email" required>
-    
-        <label for="checkin-date">Check-in Date:</label>
-        <input type="date" id="checkin-date" name="checkin-date" required>
-    
-        <label for="checkout-date">Check-out Date:</label>
-        <input type="date" id="checkout-date" name="checkout-date" required>
-    
-        <!-- Select Number of Rooms -->
-        <label for="rooms">Number of Rooms:</label>
-        <select id="rooms" name="rooms" required>
-            {% for i in rooms_range %}
-                <option value="{{ i }}">{{ i }}</option>
-            {% endfor %}
-        </select>
-    
-        <button type="submit" class="book-now-btn">Confirm Booking</button>
-    </form>
+    <div class="booking-section">
+        <!-- Property Details -->
+        <div class="property-card">
+            <h3>🏨 Hotel Details</h3>
+            <div class="hotel-image">
+                <img src="{{ property.image.url }}" alt="Hotel Image" class="hotel-image-img">
+            </div>
+            <p><strong>Description:</strong> {{ property.description }}</p>
+            <p><strong>Location:</strong> {{ property.location }}</p>
+            <p><strong>Price per Night:</strong> ₹{{ property.price }}</p>
+            <p><strong>Rooms Available:</strong> {{ property.rooms_available }}</p>
+            <p><strong>License No.:</strong> {{ property.license_number }}</p>
+        </div>
+
+        <!-- Booking Form -->
+        <form action="{% url 'book' property.id %}" method="POST" class="booking-form">
+            {% csrf_token %}
+            <label for="user-name">👤 Your Name:</label>
+            <input type="text" id="user-name" name="user-name" required>
+
+            <label for="user-phone">📞 Phone Number:</label>
+            <input type="text" id="user-phone" name="user-phone" required>
+
+            <label for="user-email">📧 Email Address:</label>
+            <input type="email" id="user-email" name="user-email" required>
+
+            <label for="room-type">🛏️ Room Type:</label>
+            <select id="room-type" name="room-type" required>
+                <option value="STANDARD">Standard Room</option>
+                <option value="DELUXE">Deluxe Room</option>
+                <option value="AC">AC Room</option>
+                <option value="NON_AC">Non-AC Room</option>
+                <option value="DUPLEX">Duplex Suite</option>
+                <option value="TRIPLEX">Triplex Suite</option>
+            </select>
+
+            <label for="checkin-date">📅 Check-in Date:</label>
+            <input type="date" id="checkin-date" name="checkin-date" required>
+
+            <label for="checkout-date">📅 Check-out Date:</label>
+            <input type="date" id="checkout-date" name="checkout-date" required>
+
+            <label for="rooms">🏘️ Number of Rooms:</label>
+            <select id="rooms" name="rooms" required data-available-rooms="{{ property.rooms_available }}">
+                {% for i in rooms_range %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="book-now-btn">✅ Confirm Booking</button>
+        </form>
+    </div>
+
+    <!-- Customer Reviews Section -->
+    <div class="reviews-section">
+        <h3>🌟 Customer Reviews</h3>
+
+        <!-- Sample Review 1 -->
+        <div class="review-card">
+            <p><strong>John Doe</strong> - 5 stars</p>
+            <p>“I had a fantastic experience staying at this hotel. The staff were incredibly helpful, and the room was perfect. Highly recommend!”</p>
+        </div>
+
+        <!-- Sample Review 2 -->
+        <div class="review-card">
+            <p><strong>Jane Smith</strong> - 4 stars</p>
+            <p>“Great location and lovely amenities. The breakfast was delicious. I only wish the Wi-Fi was faster, but overall, a great stay!”</p>
+        </div>
+
+        <!-- Sample Review 3 -->
+        <div class="review-card">
+            <p><strong>David Lee</strong> - 5 stars</p>
+            <p>“Amazing value for money! The room was clean, spacious, and well-decorated. The view from my window was breathtaking!”</p>
+        </div>
+
+        <!-- Sample Review 4 -->
+        <div class="review-card">
+            <p><strong>Emily Clark</strong> - 4 stars</p>
+            <p>“Really enjoyed my stay here. The hotel is close to many restaurants and shopping areas. The staff was friendly, and the rooms were comfortable.”</p>
+        </div>
+
+    </div>
 </div>
 
 <script>
-  // Function to validate the dates and room availability
-  function validateBookingDatesAndRooms() {
-      const checkinDate = document.getElementById("checkin-date").value;
-      const checkoutDate = document.getElementById("checkout-date").value;
-      const rooms = document.getElementById("rooms");
-      
-      const checkin = new Date(checkinDate);
-      const checkout = new Date(checkoutDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+  // Set check-in minimum to today
+  const checkinInput = document.getElementById("checkin-date");
+  const checkoutInput = document.getElementById("checkout-date");
+  const roomsSelect = document.getElementById("rooms");
 
-      // Ensure check-in date is after today's date
-      if (checkin <= today) {
-          alert("Check-in date must be after today's date.");
-          return false;  // Prevent form submission
-      }
+  const today = new Date().toISOString().split("T")[0];
+  checkinInput.min = today;
 
-      // Ensure check-out date is after check-in date
-      if (checkin >= checkout) {
-          alert("Check-out date must be after the check-in date.");
-          return false;  // Prevent form submission
-      }
+  checkinInput.addEventListener("change", () => {
+      checkoutInput.min = checkinInput.value;
 
-      // Ensure that the selected number of rooms is available
-      const availableRooms = parseInt(rooms.getAttribute('data-available-rooms'));
-
-      if (parseInt(rooms.value) > availableRooms) {
-          alert(`You can only book up to ${availableRooms} rooms.`);
-          return false;  // Prevent form submission
-      }
-
-      // If validation is successful, allow form submission
-      return true;
-  }
-
-  // Attach validation to form submission
-  document.querySelector("form").addEventListener("submit", function(event) {
-      if (!validateBookingDatesAndRooms()) {
-          event.preventDefault();  // Prevent form submission if validation fails
+      if (checkoutInput.value && checkoutInput.value < checkinInput.value) {
+          checkoutInput.value = "";
       }
   });
 
-  // Dynamic update of the rooms select box
-  function updateRoomsSelect(availableRooms) {
-      const roomsSelect = document.getElementById("rooms");
-      // Update the data-available-rooms attribute
-      roomsSelect.setAttribute("data-available-rooms", availableRooms);
-      
-      // Enable or disable options based on available rooms
-      for (let i = 1; i <= roomsSelect.options.length; i++) {
-          if (i > availableRooms) {
-              roomsSelect.options[i - 1].disabled = true;
+  function validateBookingDatesAndRooms() {
+      const checkin = new Date(checkinInput.value);
+      const checkout = new Date(checkoutInput.value);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      if (checkin <= now) {
+          alert("Check-in date must be after today's date.");
+          return false;
+      }
+
+      if (checkout <= checkin) {
+          alert("Check-out date must be after the check-in date.");
+          return false;
+      }
+
+      const availableRooms = parseInt(roomsSelect.getAttribute("data-available-rooms"));
+      const requestedRooms = parseInt(roomsSelect.value);
+
+      if (requestedRooms > availableRooms) {
+          alert(`You can only book up to ${availableRooms} rooms.`);
+          return false;
+      }
+
+      return true;
+  }
+
+  document.querySelector("form").addEventListener("submit", function(event) {
+      if (!validateBookingDatesAndRooms()) {
+          event.preventDefault();
+      }
+  });
+
+  // Disable room options more than available
+  function updateRoomOptions(limit) {
+      for (let option of roomsSelect.options) {
+          if (parseInt(option.value) > limit) {
+              option.disabled = true;
           } else {
-              roomsSelect.options[i - 1].disabled = false;
+              option.disabled = false;
           }
       }
   }
 
-  // On page load, update the room selection options
-  document.addEventListener("DOMContentLoaded", function() {
-      const availableRooms = parseInt(document.getElementById("rooms").getAttribute("data-available-rooms"));
-      updateRoomsSelect(availableRooms);
+  document.addEventListener("DOMContentLoaded", function () {
+      const limit = parseInt(roomsSelect.getAttribute("data-available-rooms"));
+      updateRoomOptions(limit);
   });
 </script>
-
 
 {% endblock %}

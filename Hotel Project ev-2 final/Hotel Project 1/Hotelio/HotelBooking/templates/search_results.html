@@ -30,37 +30,40 @@ main {
 /* Grid layout for properties */
 .properties-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Ensures that the grid is flexible */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Flexible grid layout */
     gap: 2rem;
     width: 100%;
     max-width: 1200px;
     margin-top: 20px;
-    justify-items: center; /* Centers the cards */
+    justify-items: center;
 }
 
 /* Property Card */
 .property-card {
+    display: flex;
+    flex-direction: column;
     background-color: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
-    text-align: center;
+    text-align: left;
+    width: 100%;
 }
 
 /* Card Image */
 .property-card img {
     width: 100%;
-    max-height: 200px;
-    border-radius: 10px;
+    height: 250px;
     object-fit: cover;
+    border-radius: 10px;
     margin-bottom: 15px;
 }
 
 /* Hover Effects */
 .property-card:hover {
-    transform: scale(1.03);
+    transform: scale(1.05);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -69,6 +72,7 @@ main {
     color: #222;
     font-size: 1.5rem;
     font-weight: 600;
+    margin-bottom: 10px;
 }
 
 .property-card p {
@@ -94,6 +98,8 @@ main {
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
     text-align: center;
+    margin-top: 15px;
+    text-decoration: none; /* This removes the underline */
 }
 
 /* Hover effect for Book Now button */
@@ -129,7 +135,6 @@ main {
 
 {% block main %}
 <h1 class="search-title">Search Results</h1>
-<br>
 
 {% if properties %}
     <div class="properties-container">
@@ -142,9 +147,9 @@ main {
             <p>{{ property.description|truncatewords:20 }}</p>
 
             {% if request.user.is_authenticated %}
-            <a href="{% url 'book' property.id %}" class="book-now-btn">Book Now</a>
+                <a href="{% url 'book' property.id %}" class="book-now-btn">Book Now</a>
             {% else %}
-            <a href="{% url 'login' %}?next={% url 'book' property.id %}" class="book-now-btn login-to-book">Login to Book</a>
+                <a href="{% url 'login' %}?next={% url 'book' property.id %}" class="book-now-btn login-to-book">Login to Book</a>
             {% endif %}
         </div>
         {% endfor %}

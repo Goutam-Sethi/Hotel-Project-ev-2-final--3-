@@ -180,7 +180,7 @@ main {
             <p><strong>Check-out:</strong> {{ booking.checkout_date }}</p>
         
             <div class="booking-actions">
-                <form action="{% url 'cancel_booking' booking.id %}" method="POST" id="cancel-form-{{ booking.id }}">
+                <form action="{% url 'cancel_booking_hotel' booking.id %}" method="POST" id="cancel-form-{{ booking.id }}">
                     {% csrf_token %}
                     <button type="button" class="cancel-btn" onclick="confirmCancellation({{ booking.id }})">Cancel Booking</button>
                 </form>
